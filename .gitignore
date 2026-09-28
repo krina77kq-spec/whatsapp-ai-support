@@ -1,0 +1,5 @@
+.env
+*.env.local
+n8n_data/
+pgdata/
+node_modules/
