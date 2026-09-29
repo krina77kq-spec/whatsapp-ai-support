@@ -3,3 +3,4 @@
 n8n_data/
 pgdata/
 node_modules/
+test-payload.json
