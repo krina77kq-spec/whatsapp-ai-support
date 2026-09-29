@@ -16,3 +16,12 @@ Decisión: tres tablas relacionadas con FOREIGN KEY.
 Tradeoff: más joins al consultar, pero datos normalizados, sin
 duplicación del teléfono/nombre en cada mensaje, y conversations queda
 lista para crecer con "status" en la Etapa 4 sin rediseñar nada.
+
+## Normalización del payload de Meta
+Contexto: el JSON de WhatsApp Cloud API es profundamente anidado y
+mezcla mensajes nuevos con eventos de status en la misma estructura.
+Decisión: un Code node normaliza a un formato propio simple
+{phone, external_id, message_type, body, timestamp, raw_payload}
+y filtra (return []) cualquier payload que no traiga "messages".
+Tradeoff: si Meta cambia su formato, solo hay que tocar este nodo,
+el resto del workflow no conoce la forma original de Meta.
