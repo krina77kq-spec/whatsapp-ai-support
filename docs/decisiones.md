@@ -25,3 +25,23 @@ Decisión: un Code node normaliza a un formato propio simple
 y filtra (return []) cualquier payload que no traiga "messages".
 Tradeoff: si Meta cambia su formato, solo hay que tocar este nodo,
 el resto del workflow no conoce la forma original de Meta.
+
+## Prevención de inyección SQL
+Contexto: las primeras versiones de los nodos Postgres concatenaban
+directamente {{ $json.phone }} dentro del SQL.
+Decisión: usar Query Parameters ($1, $2...) con un arreglo de JavaScript
+en vez de una lista separada por comas.
+Por qué un arreglo y no una lista separada por comas: el campo de n8n
+separa valores por coma, lo cual rompe con texto libre de clientes que
+contiene comas (ej. "Hola, quiero una cita").
+Tradeoff: la expresión es más larga de escribir, pero es segura y
+resistente a cualquier texto que escriba un cliente real.
+
+## Mensajes no soportados (imagen, audio, sticker)
+Contexto: el payload de un mensaje no-texto no tiene text.body, y sin
+manejo explícito, se guarda silenciosamente con body = NULL.
+Decisión: el nodo Code marca is_supported: true/false según el tipo
+de mensaje. En la Etapa 2, los mensajes no soportados recibirán una
+respuesta automática explicando la limitación, en vez de quedar sin
+respuesta silenciosamente.
+Alcance v1: solo se procesan mensajes de texto.

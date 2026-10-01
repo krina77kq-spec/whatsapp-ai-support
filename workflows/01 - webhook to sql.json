@@ -1,0 +1,163 @@
+{
+  "name": "01 - webhook to sql",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-inbound",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -752,
+        -128
+      ],
+      "id": "006acfad-6923-4dc3-bcd8-217c35bdb48d",
+      "name": "01 - webhook to sql",
+      "webhookId": "4cbbe8cf-0146-4364-95c7-612be255fc40"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.item.json.body;\n\nif (!body.entry || !body.entry[0]) {\n  return [];\n}\n\nconst change = body.entry[0].changes[0];\nconst value = change.value;\n\nif (!value.messages || value.messages.length === 0) {\n  return [];\n}\n\nconst message = value.messages[0];\n\n// Tipos de mensaje que sabemos procesar como texto en esta v1\nconst tiposSoportados = ['text'];\n\nreturn [{\n  json: {\n    phone: message.from,\n    external_id: message.id,\n    message_type: message.type,\n    body: message.text ? message.text.body : null,\n    is_supported: tiposSoportados.includes(message.type),\n    timestamp: message.timestamp,\n    raw_payload: body\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        -128
+      ],
+      "id": "acb0d3b5-13fd-4d38-ae21-377c91a22581",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO contacts (phone, name)\nVALUES ($1, 'Cliente WhatsApp')\nON CONFLICT (phone) DO UPDATE SET name = contacts.name\nRETURNING id;",
+        "options": {
+          "queryReplacement": "={{ $json.phone }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -400,
+        -144
+      ],
+      "id": "28facb20-655a-4f27-923c-847868d750ad",
+      "name": "Upsert contacto",
+      "credentials": {
+        "postgres": {
+          "id": "ZJwbCZY1iaEIxQn1",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO conversations (contact_id)\nVALUES ($1)\nON CONFLICT (contact_id) DO UPDATE SET contact_id = EXCLUDED.contact_id\nRETURNING id;",
+        "options": {
+          "queryReplacement": "={{ $json.id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -240,
+        -144
+      ],
+      "id": "2073707f-3be9-4d98-9200-cae3ea66528e",
+      "name": "Upsert conversación",
+      "credentials": {
+        "postgres": {
+          "id": "ZJwbCZY1iaEIxQn1",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO messages (conversation_id, external_id, direction, message_type, body, raw_payload)\nVALUES (\n  $1,\n  $2,\n  'inbound',\n  $3,\n  $4,\n  $5::jsonb\n)\nON CONFLICT (external_id) DO NOTHING\nRETURNING id;",
+        "options": {
+          "queryReplacement": "={{ [$json.id, $('Code in JavaScript').item.json.external_id, $('Code in JavaScript').item.json.message_type, $('Code in JavaScript').item.json.body, JSON.stringify($('Code in JavaScript').item.json.raw_payload)] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -80,
+        -128
+      ],
+      "id": "4addb528-fd36-47b1-bb92-568fec47e239",
+      "name": "Insertar mensaje",
+      "credentials": {
+        "postgres": {
+          "id": "ZJwbCZY1iaEIxQn1",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "01 - webhook to sql": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Upsert contacto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert contacto": {
+      "main": [
+        [
+          {
+            "node": "Upsert conversación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert conversación": {
+      "main": [
+        [
+          {
+            "node": "Insertar mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ffc893c2-c8ce-4b2c-adce-38790b316324",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "12a3238dc980938b038e81eb1fdfc47cf854923f12009098a4fd27d1c05271d4"
+  },
+  "nodeGroups": [],
+  "id": "emJ71IfTT0CqGPvV",
+  "tags": []
+}

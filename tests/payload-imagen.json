@@ -2,9 +2,10 @@
   "object": "whatsapp_business_account",
   "entry": [
     {
-      "id": "WHATSAPP_BUSINESS_ACCOUNT_ID",
+      "id": "102290129340398",
       "changes": [
         {
+          "field": "messages",
           "value": {
             "messaging_product": "whatsapp",
             "metadata": {
@@ -20,14 +21,16 @@
             "messages": [
               {
                 "from": "50688887777",
-                "id": "wamid.PRUEBA003",
-                "timestamp": "1727654321",
-                "text": { "body": "Hola, quiero una cita" },
-                "type": "text"
+                "id": "wamid.PRUEBA_IMAGEN",
+                "timestamp": "1727654500",
+                "type": "image",
+                "image": {
+                  "id": "MEDIA_ID_12345",
+                  "mime_type": "image/jpeg"
+                }
               }
             ]
-          },
-          "field": "messages"
+          }
         }
       ]
     }
