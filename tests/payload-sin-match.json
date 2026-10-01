@@ -1,0 +1,35 @@
+{
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "102290129340398",
+      "changes": [
+        {
+          "field": "messages",
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "15551234567",
+              "phone_number_id": "PHONE_NUMBER_ID"
+            },
+            "contacts": [
+              {
+                "profile": { "name": "Karina" },
+                "wa_id": "50688887777"
+              }
+            ],
+            "messages": [
+              {
+                "from": "50688887777",
+                "id": "wamid.PRUEBA_SIN_MATCH",
+                "timestamp": "1727654700",
+                "text": { "body": "Buenas tardes" },
+                "type": "text"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
